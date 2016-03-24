@@ -30,12 +30,12 @@
 			]
 		]))
 			   
-defn mostrar_request [req]
+(defn mostrar_request [req]
 	(hiccup/html 
 		[:html {}
 			[:head {} [:title {} "request"]]
 			[:body {} [:pre {} (with-out-str (pp/pprint req))]]
-		])
+		]))
 
 (defn handler [request]
 	{:status 200
