@@ -1,0 +1,67 @@
+a:link, a:visited, a:active, a:hover {
+	text-decoration: none;
+}
+a:link {
+	color: black;
+}
+a:visited {
+	color: gray;
+}
+a:active {
+	color: #7622F5;
+}
+a:hover {
+	color: black;
+}
+/*table, td {
+	border: 0.3em solid gray; 
+	border-collapse: collapse;
+}*/
+#frame {
+	width: 40em; 
+	margin: 0 auto;
+}
+#titulo {
+	background-color: gray;
+	font-size: 180%;
+	color: white;
+	padding: 0.1em;
+	margin-bottom: 1em;
+	border: 0.2em solid #DDD5FB;
+}
+#indice {
+	width: 35em; 
+	margin: 0 auto; 
+	background-color: #DDD5FB; 
+	padding: 0.4em;
+}
+#indice table {
+	margin: 0 auto;
+}
+#indice table {
+	border-spacing: 1.2em 0;
+}
+#indice table td {
+	width: 5em;
+	border: 0.3em solid #F0F0F0;
+	text-align: center; 
+	background-color: #F0F0F0;
+}
+#indice table td a {
+	width: 100%; 
+	display: block;
+}
+#indice table td:hover {
+	background-color: #FAFAFA;
+	border: 0.3em solid #E9E9E9;
+}
+#titulo {
+	background-color: gray;
+}
+#titulo h2 {
+	color: white; 
+	padding: 0.1em;
+}
+#indice table {
+	margin: 0 auto;
+}
