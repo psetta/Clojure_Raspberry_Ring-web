@@ -7,8 +7,7 @@
 				[clj-dns.core :as dns]
 				[hiccup.core :as hiccup]
 				[clojure.string :as string]
-	)
-)
+	))
 
 (def web_name "http://psetta.no-ip.org")
 
@@ -20,6 +19,7 @@
 				[:meta {:name "UTF-8"}]
 				[:meta {:name "viewport" :content "width=device-width, initial-scale=1.0"}]
 				[:link {:rel "stylesheet" :type "text/css" :href "estilo.css"}]
+				;[:link {:rel "icon" :href "favicon.ico" :type "image/x-icon"}]
 				[:style estilo]
 			]
 			[:body
@@ -44,14 +44,13 @@
 				]
 			]
 		]
-	)
-)
+	))
 
-;(defn mira-ip [ip]
-;	(let [ret (try
-;              (dns/reverse-dns-lookup ip)
-;              (catch java.net.UnknownHostException _ "none"))]
-;    ret))
+(defn mira-ip [ip]
+	(let [ret (try
+   	          (dns/reverse-dns-lookup ip)
+              (catch java.net.UnknownHostException _ "none"))]
+    ret))
 
 (def mostrar_ssh_login
 	(list
@@ -61,22 +60,19 @@
 				[:input {:type "password" :name "passwd"}]
 			]
 		]
-	)
-)
+	))
 
 (def estilo_mostrar_ssh
 	"	#ssh {text-align: center;}
 		#ssh table {margin: 0 auto; border: 0.2em solid #DDD5FB;}
 		#ssh table th {width: 5em; border: 0.1em solid lightgray; background-color: #F0F0F0}
 		#ssh table td {border: 0.1em solid #F0F0F0; padding: 0.2em}
-	"
-)
+	")
 
 (def mostrar_ssh_index2
 	(list
 		[:h2 "SSH connection attempts"]
-	)
-)
+	))
 
 (defn mostrar_sshlog []
 	(list
@@ -90,8 +86,7 @@
 				)
 			)
 		]
-	)
-)
+	))
 			   
 (defn mostrar_request [req]
 	(list
@@ -99,8 +94,7 @@
 			[:h2 "Request"]
 			[:pre {} (with-out-str (pp/pprint req))]
 		]
-	)
-)
+	))
 
 (defn handler [request]
 	(def uri (get request :uri))
@@ -108,7 +102,6 @@
 	(if (some #{uri} posibles)
 			{:status 200
 			:headers {"Content-Type" "text/html"}
-			:session {:a (rand)}
 			:body 
 				(cond
 					(and 	(= (get (get request :form-params) "passwd") "velolog")
@@ -129,6 +122,5 @@
 			:headers {"Location" "http://psetta.no-ip.org"}
 			:text "Go back to index"
 			}
-	)
-)
+	))
 			
