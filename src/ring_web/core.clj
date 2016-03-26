@@ -7,12 +7,10 @@
 				[clj-dns.core :as dns]
 				[hiccup.core :as hiccup]
 				[clojure.string :as string]
-				))
+	)
+)
 
 (def web_name "http://psetta.no-ip.org")
-
-;(def index (string/replace (slurp "static/index.html") #"\n|\t" ""))
-;(def end_index "</div></body></html>")
 
 (defn generar_web [titulo estilo contido] 
 	(hiccup/html
@@ -31,13 +29,23 @@
 					[:div {:id "indice"}
 						[:table
 							[:tr
-								[:td [:a {:href "http://pseta.no-ip.org"} [:p "Inicio"]]]
-								[:td [:a {:href "sshlog"} [:p "SSH Log"]]]
-								[:td [:a {:href "https://github.com/psetta"} [:p "Github"]]]]]
+								[:td [:a {:href "http://psetta.no-ip.org"} "Inicio"]]
+								[:td [:a {:href "sshlog"} "SSH Log"]]
+								[:td [:a {:href "request"} "Request"]]
+								[:td [:a {:href "https://github.com/psetta"} "Github"]]
+							]
+						]
 					]
 					[:br][:hr][:br]
-					contido
-					]]]))
+					(into
+						[:div {:id "contido"}]
+						(for [x contido] x)
+					)
+				]
+			]
+		]
+	)
+)
 
 ;(defn mira-ip [ip]
 ;	(let [ret (try
@@ -45,40 +53,54 @@
 ;              (catch java.net.UnknownHostException _ "none"))]
 ;    ret))
 
-(def mostrar_sshlog_index
-	"	<div id=\"ssh\">
-			<h2>SSH connection attempts</h2>
-			<form action=\".\" method=\"POST\">
-				<input type=\"password\" name=\"passwd\"
-		</div>
-	")
-
-(def mostrar_ssh_index2
-		[:h2 "SSH connection attempts"]
+(def mostrar_ssh_login
+	(list
+		[:div {:id "ssh"}
+			[:h2 "SSH connection attempts"]
+			[:form {:action "." :method "POST"}
+				[:input {:type "password" :name "passwd"}]
+			]
+		]
+	)
 )
 
-;(defn mostrar_sshlog []
-;	(hiccup/html
-;		[:html {}
-;			[:head
-;				[:title "sshlog"]
-;				[:style "table, th, td {border: 1px solid black; border-collapse: collapse; padding: 0.3em;}"]]
-;			[:body
-;				[:h2 "SSH connnection attempts"]
-;				(into	
-;				[:table {:cellspacing 40}
-;					[:tr {:bgcolor "#E0E0E0"} [:th "Date"] [:th "User"] [:th "IP"] [:th "Hostname"]]]
-;				(for [line (csv/read-csv (io/reader "static/sshlog.log"))]
-;					[:tr (for [entry line] [:td entry])]
-;				))
-;			]
-;		]))
+(def estilo_mostrar_ssh
+	"	#ssh {text-align: center;}
+		#ssh table {margin: 0 auto; border: 0.2em solid #DDD5FB;}
+		#ssh table th {width: 5em; border: 0.1em solid lightgray; background-color: #F0F0F0}
+		#ssh table td {border: 0.1em solid #F0F0F0; padding: 0.2em}
+	"
+)
+
+(def mostrar_ssh_index2
+	(list
+		[:h2 "SSH connection attempts"]
+	)
+)
+
+(defn mostrar_sshlog []
+	(list
+		[:div {:id "ssh"}
+			[:h2 "SSH connection attempts"]
+			(into	
+				[:table {}
+					[:tr {} [:th "Date"] [:th "User"] [:th "IP"] [:th "Hostname"]]]
+				(for [line (csv/read-csv (io/reader "static/sshlog.log"))]
+					[:tr (for [entry line] [:td entry])]
+				)
+			)
+		]
+	)
+)
 			   
-;(defn mostrar_request [req]
-;	(str 
-;		(hiccup/html 
-;			[:body {} [:pre {} (with-out-str (pp/pprint req))]]
-;	)))
+(defn mostrar_request [req]
+	(list
+		[:div {:id "request"}
+			[:h2 "Request"]
+			[:pre {} (with-out-str (pp/pprint req))]
+		]
+	)
+)
 
 (defn handler [request]
 	(def uri (get request :uri))
@@ -86,24 +108,27 @@
 	(if (some #{uri} posibles)
 			{:status 200
 			:headers {"Content-Type" "text/html"}
+			:session {:a (rand)}
 			:body 
 				(cond
-					;(and 	(= (get (get request :form-params) "passwd") "velolog")
-					;			(= (get request :request-method) :post))
-					;					(str index (mostrar_sshlog) end_index)
+					(and 	(= (get (get request :form-params) "passwd") "velolog")
+								(= (get request :request-method) :post))
+										(generar_web "sshlog" estilo_mostrar_ssh  (mostrar_sshlog))
 					(= uri "/")
 										(generar_web "index" "" "")
-					(= uri "/sshlog") 		
-										(generar_web "sshlog" "#ssh {text-align: center;}"  mostrar_ssh_index2)
+					(= uri "/sshlog")
+										(generar_web "sshlog" estilo_mostrar_ssh  mostrar_ssh_login)
 					(= uri "/estilo.css")
 										(slurp (str "static" uri))
-					;(= uri "/request")
-					;					(generar_web "request" "estilo" mostrar_request)
+					(= uri "/request")
+										(generar_web "request" "#request h2 {text-align: center;}"
+																	(mostrar_request request))
 				)
 			}
 			{:status 302
 			:headers {"Location" "http://psetta.no-ip.org"}
 			:text "Go back to index"
 			}
-			))
+	)
+)
 			
