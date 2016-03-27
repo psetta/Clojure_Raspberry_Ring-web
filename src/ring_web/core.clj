@@ -7,6 +7,7 @@
 				[clj-dns.core :as dns]
 				[hiccup.core :as hiccup]
 				[clojure.string :as string]
+				[ring.middleware.cookies :as cookies]
 				[ring.middleware.defaults :refer :all]
 	))
 
@@ -130,6 +131,6 @@
 																	(mostrar_request request))
 				)
 			}
-			(redirect "psetta.no-ip.org")
+			(redirect "http://psetta.no-ip.org")
 	))
 			
