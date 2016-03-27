@@ -7,6 +7,7 @@
 				[clj-dns.core :as dns]
 				[hiccup.core :as hiccup]
 				[clojure.string :as string]
+				[ring.middleware.defaults :refer :all]
 	))
 
 (def web_name "http://psetta.no-ip.org")
@@ -96,6 +97,17 @@
 		]
 	))
 
+(defn redirect [url]
+	{:status 302
+	:headers {"Location" url}
+	})
+
+(defn file-response [url]
+	{:status 200
+	:headers {}
+	:body (io/file "url")
+	})
+
 (defn handler [request]
 	(def uri (get request :uri))
 	(def posibles (list "/" "/sshlog" "/estilo.css" "/request"))
@@ -118,9 +130,6 @@
 																	(mostrar_request request))
 				)
 			}
-			{:status 302
-			:headers {"Location" "http://psetta.no-ip.org"}
-			:text "Go back to index"
-			}
+			(redirect "psetta.no-ip.org")
 	))
 			

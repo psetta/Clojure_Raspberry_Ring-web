@@ -8,6 +8,7 @@
                  [com.brweber2/clj-dns "0.0.2"]
                  [ring/ring-core "1.4.0"]
                  [ring/ring-jetty-adapter "1.4.0"]
+                 [ring/ring-defaults "0.2.0"]
                  [compojure "1.4.0"]
                  [hiccup "1.0.5"]]
   :plugins [[lein-ring "0.9.7"]]
