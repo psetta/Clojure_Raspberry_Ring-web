@@ -7,8 +7,7 @@
 				[clj-dns.core :as dns]
 				[hiccup.core :as hiccup]
 				[clojure.string :as string]
-				[ring.middleware.cookies :as cookies]
-				[ring.middleware.defaults :refer :all]
+				[ring.middleware.session :as session]
 	))
 
 (def web_name "http://psetta.no-ip.org")
@@ -21,7 +20,7 @@
 				[:meta {:name "UTF-8"}]
 				[:meta {:name "viewport" :content "width=device-width, initial-scale=1.0"}]
 				[:link {:rel "stylesheet" :type "text/css" :href "estilo.css"}]
-				;[:link {:rel "icon" :href "favicon.ico" :type "image/x-icon"}]
+				[:link {:rel "icon" :href "favicon.ico" :type "image/x-icon"}]
 				[:style estilo]
 			]
 			[:body
@@ -57,7 +56,7 @@
 (def mostrar_ssh_login
 	(list
 		[:div {:id "ssh"}
-			[:h2 "SSH connection attempts"]
+			[:h2 "Login"]
 			[:form {:action "." :method "POST"}
 				[:input {:type "password" :name "passwd"}]
 			]
@@ -70,11 +69,6 @@
 		#ssh table th {width: 5em; border: 0.1em solid lightgray; background-color: #F0F0F0}
 		#ssh table td {border: 0.1em solid #F0F0F0; padding: 0.2em}
 	")
-
-(def mostrar_ssh_index2
-	(list
-		[:h2 "SSH connection attempts"]
-	))
 
 (defn mostrar_sshlog []
 	(list
@@ -103,34 +97,53 @@
 	:headers {"Location" url}
 	})
 
-(defn file-response [url]
+(defn file-response [tipo url]
 	{:status 200
-	:headers {}
-	:body (io/file "url")
+	:headers {"Content-Type" tipo}
+	:body (io/file url)
 	})
+
+(defn web-page [cont]
+	{:status 200
+	:headers {"Content-Type" "text/html"}
+	:body cont
+	})
+
+(defn engadir-sesion [response sesion]
+	(assoc response [:session] sesion))
 
 (defn handler [request]
 	(def uri (get request :uri))
-	(def posibles (list "/" "/sshlog" "/estilo.css" "/request"))
+	(def posibles (list "/" "/sshlog" "/request" "/estilo.css" "/favicon.ico"))
 	(if (some #{uri} posibles)
-			{:status 200
-			:headers {"Content-Type" "text/html"}
-			:body 
-				(cond
-					(and 	(= (get (get request :form-params) "passwd") "velolog")
-								(= (get request :request-method) :post))
-										(generar_web "sshlog" estilo_mostrar_ssh  (mostrar_sshlog))
-					(= uri "/")
-										(generar_web "index" "" "")
-					(= uri "/sshlog")
-										(generar_web "sshlog" estilo_mostrar_ssh  mostrar_ssh_login)
-					(= uri "/estilo.css")
-										(slurp (str "static" uri))
-					(= uri "/request")
-										(generar_web "request" "#request h2 {text-align: center;}"
-																	(mostrar_request request))
-				)
-			}
-			(redirect "http://psetta.no-ip.org")
+		(cond
+			(and (= uri "/") (= (get (get request :form-params) "passwd") "abc123."))
+					(let [web (web-page (generar_web 
+										"index" "" "Sesión Iniciada"))]
+								(engadir-sesion web "hola mundo"))
+			(and (= uri "/") (= (get request :session) "hola mundo"))
+					(web-page (generar_web 
+										"index" "" "Benvido"))
+			(and (= uri "/") (not (= (get request :session) "hola mundo")))
+					(web-page (generar_web 
+										"login" estilo_mostrar_ssh mostrar_ssh_login))
+			(= uri "/sshlog")
+					(web-page (generar_web 
+										"sshlog" estilo_mostrar_ssh  (mostrar_sshlog)))
+			(= uri "/request")
+					(web-page (generar_web
+										"request" "#request h2 {text-align: center;}"
+										(mostrar_request request)))
+			(= uri "/estilo.css")
+					(file-response "text/css" (str "static" uri))
+			(= uri "/favicon.ico")
+					(file-response "image/x-icon" (str "static" uri))
+		)
+		(redirect "http://psetta.no-ip.org")
+	))
+
+(def app
+	(-> #'handler
+			(session/wrap-session)
 	))
 			

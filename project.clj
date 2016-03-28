@@ -12,7 +12,7 @@
                  [compojure "1.4.0"]
                  [hiccup "1.0.5"]]
   :plugins [[lein-ring "0.9.7"]]
-  :ring {:handler ring_web.core/handler
+  :ring {:handler ring_web.core/app
          :port 8080
          :auto-refresh? true})
 
