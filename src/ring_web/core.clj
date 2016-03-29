@@ -109,22 +109,22 @@
 	:body cont
 	})
 
-(defn engadir-sesion [response sesion]
-	(assoc response [:session] sesion))
+(def valores_sesions [])
 
-(defn handler [request]
-	(def uri (get request :uri))
-	(def posibles (list "/" "/sshlog" "/request" "/estilo.css" "/favicon.ico"))
-	(if (some #{uri} posibles)
-		(cond
-			(and (= uri "/") (= (get (get request :form-params) "passwd") "abc123."))
-					(let [web (web-page (generar_web 
-										"index" "" "Sesión Iniciada"))]
-								(engadir-sesion web "hola mundo"))
-			(and (= uri "/") (= (get request :session) "hola mundo"))
-					(web-page (generar_web 
-										"index" "" "Benvido"))
-			(and (= uri "/") (not (= (get request :session) "hola mundo")))
+
+(defn engadir-sesion [response sesion]
+	(assoc response :session sesion))
+
+(def contrasinal "deixameentrar")
+
+(defn cargar_web_indicada [uri request]
+	(cond
+			(and (= uri "/") (= ((request :form-params) "passwd") contrasinal))
+					(let [web (web-page (generar_web "index" "" "Sesión Iniciada"))]
+								(engadir-sesion web (rand)))
+			(and (= uri "/") (= (request :session) "hola mundo"))
+					(web-page (generar_web "index" "" "Benvido"))
+			(and (= uri "/") (not (= (request :session) "hola mundo")))
 					(web-page (generar_web 
 										"login" estilo_mostrar_ssh mostrar_ssh_login))
 			(= uri "/sshlog")
@@ -138,7 +138,13 @@
 					(file-response "text/css" (str "static" uri))
 			(= uri "/favicon.ico")
 					(file-response "image/x-icon" (str "static" uri))
-		)
+		))
+
+(defn handler [request]
+	(def uri (request :uri))
+	(def posibles ["/" "/sshlog" "/request" "/estilo.css" "/favicon.ico"])
+	(if (some #{uri} posibles)
+		(cargar_web_indicada uri request)
 		(redirect "http://psetta.no-ip.org")
 	))
 
