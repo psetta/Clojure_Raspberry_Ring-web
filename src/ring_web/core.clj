@@ -8,17 +8,20 @@
 				[hiccup.core :as hiccup]
 				[clojure.string :as string]
 				[ring.middleware.session :as session]
+				[sigmund.core :as sig]
 	))
 
 (def web_name "http://psetta.no-ip.org")
 
-(defn generar_web [titulo estilo contido] 
+(defn generar_web [priv refresh titulo estilo contido] 
 	(hiccup/html
 		[:html {}
 			[:head
 				[:title titulo]
 				[:meta {:name "UTF-8"}]
 				[:meta {:name "viewport" :content "width=device-width, initial-scale=1.0"}]
+				(when refresh
+					[:meta {:http-equiv "refresh" :content "1;URL='http://psetta.no-ip.org'"}])
 				[:link {:rel "stylesheet" :type "text/css" :href "estilo.css"}]
 				[:link {:rel "icon" :href "favicon.ico" :type "image/x-icon"}]
 				[:style estilo]
@@ -31,8 +34,14 @@
 						[:table
 							[:tr
 								[:td [:a {:href "http://psetta.no-ip.org"} "Inicio"]]
-								[:td [:a {:href "sshlog"} "SSH Log"]]
-								[:td [:a {:href "request"} "Request"]]
+								(when priv
+									(into
+										[:div {:id "priv_links"}]
+										(for [x [
+														[:td [:a {:href "sshlog"} "SSH Log"]]
+														[:td [:a {:href "request"} "Request"]]
+														]] x)
+									))
 								[:td [:a {:href "https://github.com/psetta"} "Github"]]
 							]
 						]
@@ -66,8 +75,8 @@
 (def estilo_mostrar_ssh
 	"	#ssh {text-align: center;}
 		#ssh table {margin: 0 auto; border: 0.2em solid #DDD5FB;}
-		#ssh table th {width: 5em; border: 0.1em solid lightgray; background-color: #F0F0F0}
-		#ssh table td {border: 0.1em solid #F0F0F0; padding: 0.2em}
+		#ssh table th {width: 5.5em; border: 0.1em solid lightgray; background-color: #F0F0F0}
+		#ssh table td {border: 0.1em solid #F0F0F0; padding: 0.1em}
 	")
 
 (defn mostrar_sshlog []
@@ -92,6 +101,21 @@
 		]
 	))
 
+(defn mostrar_server_info []
+	(list
+		[:div {:id "server_info"}
+			[:h2 "Server Info"]
+			[:h3 "Sistema Operativo"]
+			[:pre {} (with-out-str (pp/pprint (sig/os)))]
+			[:h3 "Memoria"]
+			[:pre {} (with-out-str (pp/pprint (sig/os-memory)))]
+			[:h3 "CPU"]
+			[:pre {} (with-out-str (pp/pprint (sig/cpu-usage)))]
+			[:h3 "Disco"]
+			[:pre {} (with-out-str (pp/pprint (sig/fs-usage "/")))]
+		]
+	))
+
 (defn redirect [url]
 	{:status 302
 	:headers {"Location" url}
@@ -109,30 +133,64 @@
 	:body cont
 	})
 
-(def valores_sesions [])
+(def sesion_iniciadas [])
 
+(defn generar_sesion []
+	(def id (rand))
+	(if (not (some #{id} sesion_iniciadas))
+			id
+			(recur)))
 
-(defn engadir-sesion [response sesion]
-	(assoc response :session sesion))
+(defn engadir-sesion [response id]
+	(def sesion_iniciadas (cons id sesion_iniciadas))
+	(assoc response :session id))
 
-(def contrasinal "deixameentrar")
+(def contrasinal "queroentrar")
 
-(defn cargar_web_indicada [uri request]
+(defn cargar_pagina_indicada [uri request]
+	(def si
+		(if (some #{(request :session)} sesion_iniciadas)
+				true
+				false))
 	(cond
-			(and (= uri "/") (= ((request :form-params) "passwd") contrasinal))
-					(let [web (web-page (generar_web "index" "" "Sesión Iniciada"))]
-								(engadir-sesion web (rand)))
-			(and (= uri "/") (= (request :session) "hola mundo"))
-					(web-page (generar_web "index" "" "Benvido"))
-			(and (= uri "/") (not (= (request :session) "hola mundo")))
-					(web-page (generar_web 
-										"login" estilo_mostrar_ssh mostrar_ssh_login))
+			(= uri "/") 
+				(cond
+					si
+							(web-page (generar_web
+												si
+												false
+												"psetta"
+												"#contido h2 {text-align: center;}"
+												(mostrar_server_info)))
+					(= ((request :form-params) "passwd") contrasinal)
+							(let 	[web (web-page (generar_web 
+												true
+												true
+												"psetta" 
+												"#contido {text-align: center;}" 
+												"Sesión Iniciada"))]
+										(engadir-sesion web (generar_sesion)))
+					:else
+							(web-page (generar_web 
+												si
+												false
+												"login"
+												estilo_mostrar_ssh 
+												mostrar_ssh_login))
+				)
 			(= uri "/sshlog")
 					(web-page (generar_web 
-										"sshlog" estilo_mostrar_ssh  (mostrar_sshlog)))
+										si
+										false
+										"psetta" 
+										estilo_mostrar_ssh  
+										(mostrar_sshlog)))
 			(= uri "/request")
 					(web-page (generar_web
-										"request" "#request h2 {text-align: center;}"
+										si
+										false
+										"psetta" 
+										"#request h2 {text-align: center;}"
 										(mostrar_request request)))
 			(= uri "/estilo.css")
 					(file-response "text/css" (str "static" uri))
@@ -142,9 +200,12 @@
 
 (defn handler [request]
 	(def uri (request :uri))
-	(def posibles ["/" "/sshlog" "/request" "/estilo.css" "/favicon.ico"])
+	(if (some #{(request :session)} sesion_iniciadas)
+			(def posibles ["/" "/sshlog" "/request" "/estilo.css" "/favicon.ico"])
+			(def posibles ["/" "/estilo.css" "/favicon.ico"])
+	)
 	(if (some #{uri} posibles)
-		(cargar_web_indicada uri request)
+		(cargar_pagina_indicada uri request)
 		(redirect "http://psetta.no-ip.org")
 	))
 
