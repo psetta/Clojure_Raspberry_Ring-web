@@ -38,11 +38,12 @@
 									(into
 										[:div {:id "priv_links"}]
 										(for [x [
-														[:td [:a {:href "sshlog"} "SSH Log"]]
-														[:td [:a {:href "request"} "Request"]]
-														]] x)
+												[:td [:a {:href "sshlog"} "SSH Log"]]
+												[:td [:a {:href "request"} "Request"]]
+												]
+											] x)
 									))
-								[:td [:a {:href "https://github.com/psetta"} "Github"]]
+								[:td [:a {:href "https://github.com/psetta" :target "_blank"} "Github"]]
 							]
 						]
 					]
@@ -86,8 +87,11 @@
 			(into	
 				[:table {}
 					[:tr {} [:th "Date"] [:th "User"] [:th "IP"] [:th "Hostname"]]]
-				(for [line (csv/read-csv (io/reader "static/sshlog.log"))]
-					[:tr (for [entry line] [:td entry])]
+				(if (.exists (clojure.java.io/as-file "static/sshlog.log"))
+					(for [line (csv/read-csv (io/reader "static/sshlog.log"))]
+						[:tr (for [entry line] [:td entry])]
+					)
+					[]
 				)
 			)
 		]
@@ -104,15 +108,15 @@
 (defn mostrar_server_info []
 	(list
 		[:div {:id "server_info"}
-			[:h2 "Server Info"]
-			[:h3 "Sistema Operativo"]
-			[:pre {} (with-out-str (pp/pprint (sig/os)))]
-			[:h3 "Memoria"]
-			[:pre {} (with-out-str (pp/pprint (sig/os-memory)))]
-			[:h3 "CPU"]
-			[:pre {} (with-out-str (pp/pprint (sig/cpu-usage)))]
-			[:h3 "Disco"]
-			[:pre {} (with-out-str (pp/pprint (sig/fs-usage "/")))]
+			;[:h2 "Server Info"]
+			;[:h3 "Sistema Operativo"]
+			;[:pre {} (with-out-str (pp/pprint (sig/os)))]
+			;[:h3 "Memoria"]
+			;[:pre {} (with-out-str (pp/pprint (sig/os-memory)))]
+			;[:h3 "CPU"]
+			;[:pre {} (with-out-str (pp/pprint (sig/cpu-usage)))]
+			;[:h3 "Disco"]
+			;[:pre {} (with-out-str (pp/pprint (sig/fs-usage "/")))]
 		]
 	))
 
@@ -133,65 +137,64 @@
 	:body cont
 	})
 
-(def sesion_iniciadas [])
+;(def sesion_iniciadas [])
 
-(defn generar_sesion []
-	(def id (rand))
-	(if (not (some #{id} sesion_iniciadas))
-			id
-			(recur)))
+;(defn generar_sesion []
+;	(def id (rand))
+;	(if (not (some #{id} sesion_iniciadas))
+;			id
+;			(recur)))
 
 (defn engadir-sesion [response id]
-	(def sesion_iniciadas (cons id sesion_iniciadas))
+	;(def sesion_iniciadas (cons id sesion_iniciadas))
 	(assoc response :session id))
 
-(def contrasinal "queroentrar")
+(def contrasinal "contrasinal")
 
 (defn cargar_pagina_indicada [uri request]
 	(def si
-		(if (some #{(request :session)} sesion_iniciadas)
-				true
-				false))
+		;(if (some #{(request :session)} sesion_iniciadas)
+		(if (float? (request :session)) true false))
 	(cond
-			(= uri "/") 
-				(cond
-					si
-							(web-page (generar_web
-												si
-												false
-												"psetta"
-												"#contido h2 {text-align: center;}"
-												(mostrar_server_info)))
+		(= uri "/") 
+			(cond
+				si
+					(web-page (generar_web
+							si
+							false
+							"psetta"
+							"#contido h2 {text-align: center;}"
+							(mostrar_server_info)))
 					(= ((request :form-params) "passwd") contrasinal)
 							(let 	[web (web-page (generar_web 
-												true
-												true
-												"psetta" 
-												"#contido {text-align: center;}" 
-												"Sesión Iniciada"))]
-										(engadir-sesion web (generar_sesion)))
+										true
+										true
+										"psetta" 
+										"#contido {text-align: center;}" 
+										"Sesión Iniciada"))]
+									(engadir-sesion web (rand)))
 					:else
-							(web-page (generar_web 
-												si
-												false
-												"login"
-												estilo_mostrar_ssh 
-												mostrar_ssh_login))
+						(web-page (generar_web 
+							si
+							false
+							"login"
+							estilo_mostrar_ssh 
+							mostrar_ssh_login))
 				)
 			(= uri "/sshlog")
 					(web-page (generar_web 
-										si
-										false
-										"psetta" 
-										estilo_mostrar_ssh  
-										(mostrar_sshlog)))
+						si
+						false
+						"psetta" 
+						estilo_mostrar_ssh  
+						(mostrar_sshlog)))
 			(= uri "/request")
 					(web-page (generar_web
-										si
-										false
-										"psetta" 
-										"#request h2 {text-align: center;}"
-										(mostrar_request request)))
+						si
+						false
+						"psetta"
+						"#request h2 {text-align: center;}"
+						(mostrar_request request)))
 			(= uri "/estilo.css")
 					(file-response "text/css" (str "static" uri))
 			(= uri "/favicon.ico")
@@ -200,7 +203,9 @@
 
 (defn handler [request]
 	(def uri (request :uri))
-	(if (some #{(request :session)} sesion_iniciadas)
+	;(if (some #{(request :session)} sesion_iniciadas)
+	(if (float? (request :session))
+		
 			(def posibles ["/" "/sshlog" "/request" "/estilo.css" "/favicon.ico"])
 			(def posibles ["/" "/estilo.css" "/favicon.ico"])
 	)

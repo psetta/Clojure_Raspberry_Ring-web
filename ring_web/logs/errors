@@ -1,0 +1,6 @@
+Java HotSpot(TM) Client VM warning: TieredCompilation is disabled in this release.
+Java HotSpot(TM) Client VM warning: TieredCompilation is disabled in this release.
+2016-04-04 00:16:39.627:INFO::main: Logging initialized @10333ms
+2016-04-04 00:17:07.671:INFO:oejs.Server:main: jetty-9.2.10.v20150310
+2016-04-04 00:17:07.912:INFO:oejs.ServerConnector:main: Started ServerConnector@a6212a{HTTP/1.1}{0.0.0.0:8080}
+2016-04-04 00:17:07.915:INFO:oejs.Server:main: Started @38621ms
