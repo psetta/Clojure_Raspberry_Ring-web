@@ -11,7 +11,8 @@
                  [ring/ring-defaults "0.2.0"]
                  [compojure "1.4.0"]
                  [hiccup "1.0.5"]
-                 [sigmund "0.1.1"]]
+                 ;[sigmund "0.1.1"]
+                 [im.chit/oren "0.1.1"]]
   :plugins [[lein-ring "0.9.7"]]
   :ring {:handler ring_web.core/app
          :port 8080

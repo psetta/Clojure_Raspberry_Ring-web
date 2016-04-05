@@ -8,7 +8,7 @@
 				[hiccup.core :as hiccup]
 				[clojure.string :as string]
 				[ring.middleware.session :as session]
-				[sigmund.core :as sig]
+				[oren.core :as oren]
 	))
 
 (def web_name "http://psetta.no-ip.org")
@@ -101,24 +101,31 @@
 	(list
 		[:div {:id "request"}
 			[:h2 "Request"]
-			[:pre {} (with-out-str (pp/pprint req))]
-		]
-	))
+			[:p {} (with-out-str (pp/pprint req))]
+		]))
 
 (defn mostrar_server_info []
-	(list
+	(def server_info (oren/all))
+	(def os (:operating-system server_info))
+	(def ram (:memory (:hardware server_info)))
+	(def cpu (:processor (:hardware server_info)))
+	(def disks (:file-stores (:hardware server_info))) 
+	(list 
 		[:div {:id "server_info"}
-			;[:h2 "Server Info"]
-			;[:h3 "Sistema Operativo"]
-			;[:pre {} (with-out-str (pp/pprint (sig/os)))]
-			;[:h3 "Memoria"]
-			;[:pre {} (with-out-str (pp/pprint (sig/os-memory)))]
-			;[:h3 "CPU"]
-			;[:pre {} (with-out-str (pp/pprint (sig/cpu-usage)))]
-			;[:h3 "Disco"]
-			;[:pre {} (with-out-str (pp/pprint (sig/fs-usage "/")))]
-		]
-	))
+			[:h2 "SERVER INFO"]
+			[:h3 "Sistema Operativo"]
+			[:div {:id "os_info"}
+				[:p (str (:manufacturer os) " " (:family os))]
+				[:p (str os)]]
+			[:h3 "CPU"]
+			[:div {:id "cpu_info"}
+				[:p {} (str cpu)]]
+			[:h3 "RAM"]
+			[:div {:id "ram"}
+				[:p {} (with-out-str (pp/pprint ram))]]
+			[:h3 "Discos"]
+			[:div {:id "discos"}
+				[:p {} (with-out-str (pp/pprint disks))]]]))
 
 (defn redirect [url]
 	{:status 302
@@ -149,7 +156,7 @@
 	;(def sesion_iniciadas (cons id sesion_iniciadas))
 	(assoc response :session id))
 
-(def contrasinal "contrasinal")
+(def contrasinal "abc123.")
 
 (defn cargar_pagina_indicada [uri request]
 	(def si
@@ -172,7 +179,7 @@
 										"psetta" 
 										"#contido {text-align: center;}" 
 										"Sesión Iniciada"))]
-									(engadir-sesion web (rand)))
+										(engadir-sesion web (rand)))
 					:else
 						(web-page (generar_web 
 							si
