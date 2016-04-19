@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cp /var/log/auth.log /home/psetta/logs/cpauth.log
+cp /var/log/auth.log /home/psetta/logs/auth_cp.log
 
 cd /home/psetta/logs
 
@@ -11,7 +11,7 @@ if ! [ -f sshlog0.log ]; then
   touch sshlog0.log
 fi
 
-cat cpauth.log | grep 'Invalid user' >> sshlog_aux.log
+cat auth_cp.log | grep 'Invalid user' >> sshlog_aux.log
 cat sshlog_aux.log | sort | uniq > log_temp.log
 mv log_temp.log sshlog_aux.log
 

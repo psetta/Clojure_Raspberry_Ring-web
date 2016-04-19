@@ -63,9 +63,9 @@
               (catch java.net.UnknownHostException _ "none"))]
     ret))
 
-(def mostrar_ssh_login
+(def mostrar_login
 	(list
-		[:div {:id "ssh"}
+		[:div {:id "login"}
 			[:h2 "Login"]
 			[:form {:action "." :method "POST"}
 				[:input {:type "password" :name "passwd"}]
@@ -75,9 +75,12 @@
 
 (def estilo_mostrar_ssh
 	"	#ssh {text-align: center;}
-		#ssh table {margin: 0 auto; border: 0.2em solid #DDD5FB;}
-		#ssh table th {width: 5.5em; border: 0.1em solid lightgray; background-color: #F0F0F0}
-		#ssh table td {border: 0.1em solid #F0F0F0; padding: 0.1em}
+		#ssh table {margin: 0 auto; border: 0.2em solid #DDD5FB; padding: 0.1em;}
+		#ssh table th {border: 0.1em solid lightgray; background-color: #F0F0F0; margin: 1em; padding: 0.3em;}
+		#ssh table td {border: 0.1em solid #F0F0F0; padding: 0.3em; margin: 1em;  max-width: 15em;
+						min-width: 3em; overflow: hidden; text-overflow: ellipsis;}
+		#ssh table tr:hover {background-color: #F0F0F0;}
+		#ssh table td:hover {background-color: #E5E0F4; overflow: visible;}
 	")
 
 (defn mostrar_sshlog []
@@ -86,7 +89,7 @@
 			[:h2 "SSH connection attempts"]
 			(into	
 				[:table {}
-					[:tr {} [:th "Date"] [:th "User"] [:th "IP"] [:th "Hostname"]]]
+					[:tr {} [:th "Date"] [:th "User"] [:th "IP"] [:th "City"] [:th "Country"] [:th "Hostname"]]]
 				(if (.exists (clojure.java.io/as-file "static/sshlog.log"))
 					(for [line (csv/read-csv (io/reader "static/sshlog.log"))]
 						[:tr (for [entry line] [:td entry])]
@@ -101,7 +104,7 @@
 	(list
 		[:div {:id "request"}
 			[:h2 "Request"]
-			[:p {} (with-out-str (pp/pprint req))]
+			[:pre {} (with-out-str (pp/pprint req))]
 		]))
 
 (defn mostrar_server_info []
@@ -116,16 +119,16 @@
 			[:h3 "Sistema Operativo"]
 			[:div {:id "os_info"}
 				[:p (str (:manufacturer os) " " (:family os))]
-				[:p (str os)]]
+				[:pre (str os)]]
 			[:h3 "CPU"]
 			[:div {:id "cpu_info"}
 				[:p {} (str cpu)]]
 			[:h3 "RAM"]
 			[:div {:id "ram"}
-				[:p {} (with-out-str (pp/pprint ram))]]
+				[:pre {} (with-out-str (pp/pprint ram))]]
 			[:h3 "Discos"]
 			[:div {:id "discos"}
-				[:p {} (with-out-str (pp/pprint disks))]]]))
+				[:pre {} (with-out-str (pp/pprint disks))]]]))
 
 (defn redirect [url]
 	{:status 302
@@ -144,23 +147,13 @@
 	:body cont
 	})
 
-;(def sesion_iniciadas [])
-
-;(defn generar_sesion []
-;	(def id (rand))
-;	(if (not (some #{id} sesion_iniciadas))
-;			id
-;			(recur)))
-
 (defn engadir-sesion [response id]
-	;(def sesion_iniciadas (cons id sesion_iniciadas))
 	(assoc response :session id))
 
-(def contrasinal "abc123.")
+(def contrasinal "paso")
 
 (defn cargar_pagina_indicada [uri request]
 	(def si
-		;(if (some #{(request :session)} sesion_iniciadas)
 		(if (float? (request :session)) true false))
 	(cond
 		(= uri "/") 
@@ -185,8 +178,8 @@
 							si
 							false
 							"login"
-							estilo_mostrar_ssh 
-							mostrar_ssh_login))
+							"#login {text-align: center;}" 
+							mostrar_login))
 				)
 			(= uri "/sshlog")
 					(web-page (generar_web 
@@ -210,7 +203,6 @@
 
 (defn handler [request]
 	(def uri (request :uri))
-	;(if (some #{(request :session)} sesion_iniciadas)
 	(if (float? (request :session))
 		
 			(def posibles ["/" "/sshlog" "/request" "/estilo.css" "/favicon.ico"])

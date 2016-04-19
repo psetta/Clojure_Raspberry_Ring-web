@@ -25,15 +25,17 @@ a:hover {
 	background-color: gray;
 	font-size: 180%;
 	color: white;
-	padding: 0.1em;
+	padding: 0.2em;
 	margin-bottom: 1em;
 	border: 0.2em solid #DDD5FB;
+	border-radius: 1em;
 }
 #indice {
 	width: 35em; 
 	margin: 0 auto; 
 	background-color: #DDD5FB; 
-	padding: 0.4em;
+	padding: 0.5em;
+	border-radius: 1em;
 }
 #indice table {
 	margin: 0 auto;
@@ -46,6 +48,7 @@ a:hover {
 	border: 0.3em solid #F0F0F0;
 	text-align: center; 
 	background-color: #F0F0F0;
+	border-radius: 1em;
 }
 #indice table td a {
 	width: 100%; 
