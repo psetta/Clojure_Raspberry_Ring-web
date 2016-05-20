@@ -21,29 +21,28 @@
 				[:meta {:name "UTF-8"}]
 				[:meta {:name "viewport" :content "width=device-width, initial-scale=1.0"}]
 				(when refresh
-					[:meta {:http-equiv "refresh" :content "1;URL='http://psetta.no-ip.org'"}])
+					[:meta {:http-equiv "refresh" :content "1;URL='http://psetta-clojure.ga'"}])
 				[:link {:rel "stylesheet" :type "text/css" :href "estilo.css"}]
 				[:link {:rel "icon" :href "favicon.ico" :type "image/x-icon"}]
 				[:style estilo]
 			]
 			[:body
 				[:div {:id "frame"}
-					[:div {:id "titulo"} "Psetta Maxima"]
-					[:hr][:br]
+					[:a {:href "http://psetta-clojure.ga"} [:div {:id "titulo"} "Psetta Maxima"]]
 					[:div {:id "indice"}
 						[:table
 							[:tr
-								[:td [:a {:href "http://psetta.no-ip.org"} "Inicio"]]
 								(when priv
 									(into
 										[:div {:id "priv_links"}]
 										(for [x [
-												[:td [:a {:href "sshlog"} "SSH Log"]]
-												[:td [:a {:href "request"} "Request"]]
+												[:td {:class "normal"} [:a {:href "."} "OS Info"]]
+												[:td {:class "normal"} [:a {:href "sshlog"} "SSH Log"]]
+												[:td {:class "normal"} [:a {:href "request"} "Request"]]
 												]
 											] x)
 									))
-								[:td [:a {:href "https://github.com/psetta" :target "_blank"} "Github"]]
+								[:td {:class "normal"} [:a {:href "https://github.com/psetta" :target "_blank"} "Github"]]
 							]
 						]
 					]
@@ -75,12 +74,12 @@
 
 (def estilo_mostrar_ssh
 	"	#ssh {text-align: center;}
-		#ssh table {margin: 0 auto; border: 0.2em solid #DDD5FB; padding: 0.1em;}
+		#ssh table {margin: 0 auto; border: 0.2em solid #9CE5FF; padding: 0.1em;}
 		#ssh table th {border: 0.1em solid lightgray; background-color: #F0F0F0; margin: 1em; padding: 0.3em;}
 		#ssh table td {border: 0.1em solid #F0F0F0; padding: 0.3em; margin: 1em;  max-width: 15em;
 						min-width: 3em; overflow: hidden; text-overflow: ellipsis;}
 		#ssh table tr:hover {background-color: #F0F0F0;}
-		#ssh table td:hover {background-color: #E5E0F4; overflow: visible;}
+		#ssh table td:hover {background-color: #BAE6F7; overflow: visible;}
 	")
 
 (defn mostrar_sshlog []
@@ -99,36 +98,36 @@
 			)
 		]
 	))
+	
+;; Colhe un diccionario e transformao en táboa
+(defn fai-taboa [todo]
+  (cond
+    (map? todo) [:table {:border 1}
+                 (for [[k v] (reverse todo)]
+                   [:tr
+                    [:td k]
+                    [:td
+                     (if (= k :edid) (str v)
+                         (fai-taboa v))]])]
+    (or (vector? todo)
+        (seq? todo)) [:table {:border 1}
+                      (for [x todo]
+                        [:tr [:td (fai-taboa x)]])]
+    :else (str todo)))
 			   
 (defn mostrar_request [req]
 	(list
 		[:div {:id "request"}
 			[:h2 "Request"]
-			[:pre {} (with-out-str (pp/pprint req))]
+			(fai-taboa req)
 		]))
 
 (defn mostrar_server_info []
 	(def server_info (oren/all))
-	(def os (:operating-system server_info))
-	(def ram (:memory (:hardware server_info)))
-	(def cpu (:processor (:hardware server_info)))
-	(def disks (:file-stores (:hardware server_info))) 
 	(list 
 		[:div {:id "server_info"}
-			[:h2 "SERVER INFO"]
-			[:h3 "Sistema Operativo"]
-			[:div {:id "os_info"}
-				[:p (str (:manufacturer os) " " (:family os))]
-				[:pre (str os)]]
-			[:h3 "CPU"]
-			[:div {:id "cpu_info"}
-				[:p {} (str cpu)]]
-			[:h3 "RAM"]
-			[:div {:id "ram"}
-				[:pre {} (with-out-str (pp/pprint ram))]]
-			[:h3 "Discos"]
-			[:div {:id "discos"}
-				[:pre {} (with-out-str (pp/pprint disks))]]]))
+			(fai-taboa server_info)
+		]))
 
 (defn redirect [url]
 	{:status 302
@@ -150,7 +149,7 @@
 (defn engadir-sesion [response id]
 	(assoc response :session id))
 
-(def contrasinal "paso")
+(def contrasinal "abrete")
 
 (defn cargar_pagina_indicada [uri request]
 	(def si
@@ -163,7 +162,8 @@
 							si
 							false
 							"psetta"
-							"#contido h2 {text-align: center;}"
+							 "#server_info {width:45em; margin: 0 auto;}
+							  #server_info table {border: 0.1em solid #9CE5FF; padding: 0.1em;}"
 							(mostrar_server_info)))
 					(= ((request :form-params) "passwd") contrasinal)
 							(let 	[web (web-page (generar_web 
@@ -193,7 +193,9 @@
 						si
 						false
 						"psetta"
-						"#request h2 {text-align: center;}"
+						"#request h2 {text-align: center;}
+						 #request {width:50em; margin: 0 auto;}
+						 #request table {border: 0.1em solid #9CE5FF; padding: 0.1em;}"
 						(mostrar_request request)))
 			(= uri "/estilo.css")
 					(file-response "text/css" (str "static" uri))
@@ -210,7 +212,7 @@
 	)
 	(if (some #{uri} posibles)
 		(cargar_pagina_indicada uri request)
-		(redirect "http://psetta.no-ip.org")
+		(redirect "http://psetta-clojure.ga")
 	))
 
 (def app

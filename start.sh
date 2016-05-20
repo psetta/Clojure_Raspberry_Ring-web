@@ -1,3 +1,3 @@
 #!bin/bash
-cd $HOME/ring_web
+cd $HOME/www/clojure_ring_pi
 nohup lein ring server >logs/log 2>logs/errors &
