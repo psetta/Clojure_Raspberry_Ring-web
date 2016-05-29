@@ -153,7 +153,8 @@
 
 (defn cargar_pagina_indicada [uri request]
 	(def si
-		(if (float? (request :session)) true false))
+		;(if (float? (request :session)) true false))
+		true)
 	(cond
 		(= uri "/") 
 			(cond
