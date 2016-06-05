@@ -1,0 +1,2 @@
+{:require [ringweb.core]
+ :compiler-options {:asset-path "js/main.out"}}

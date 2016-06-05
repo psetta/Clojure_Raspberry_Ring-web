@@ -1,6 +1,8 @@
-(ns ring_web.core
+(ns ringweb.core
     (:require  [clojure.string :as str]
                [clojure.data.csv :as csv]
+               [compojure.core :refer (defroutes GET POST)]
+               [compojure.route :refer (files not-found resources)]
                [clojure.java.io :as io]
                [clojure.pprint :as pp]
                [compojure.route :as route]
@@ -43,7 +45,10 @@
                  [:br][:hr][:br]
                  (into
                   [:div {:id "contido"}]
-                  (for [x contido] x))]]]))
+                  (for [x contido] x))]
+           [:div#app_container
+            [:script {:type "text/javascript" :src "js/main.js"}]
+            [:script {:type "text/javascript"} "ringweb.core.main();"]]]]))
 
 (defn mira-ip [ip]
   (let [ret (try
@@ -191,8 +196,6 @@
     (file-response "image/x-icon" (str "static" uri))))
     
 
-
-
 (defn handler [request]
   (def uri (request :uri))
   (if (float? (request :session))
@@ -202,6 +205,14 @@
       (cargar_pagina_indicada uri request)
       (redirect "/index")))
 
+(defroutes handler-comp
+  (GET "/" req (handler req))
+  (GET "/index" req (handler req))
+  (resources "/")
+  (files "/")
+  (not-found "NON EXISTE HOSTIA"))
+
+
 (def app
-  (-> #'handler
+  (-> #'handler-comp
       (session/wrap-session)))
