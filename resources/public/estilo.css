@@ -1,0 +1,73 @@
+a:link, a:visited, a:active, a:hover {
+	text-decoration: none;
+}
+a:link {
+	color: black;
+}
+a:visited {
+	color: black;
+}
+a:active {
+	color: blue;
+}
+a:hover {
+	color: black;
+}
+body {
+	background-color: white;
+}
+#frame {
+	min-height: 100%;
+	width: 50em; 
+	margin: 0 auto;
+	background-color: #FAFAFA; 
+}
+#titulo {
+	height: 2em;
+	background-color: #E9E9E9;
+	font-size: 100%;
+	color: black;
+	padding: 0.2em;
+	margin-bottom: 1em;
+	border: 0.2em solid #E9E9E9;
+}
+#titulo:hover {
+	color: gray;
+}
+#indice {
+	width: 35em; 
+	margin: 0 auto; 
+	padding: 0.5em;
+	background-color: #9CE5FF; 
+	border: 0.3em solid #9CE5FF;
+}
+#indice table {
+	margin: 0 auto;
+	border-spacing: 1.2em 0;
+}
+#indice table td {
+	height: 2.5em;
+	width: 5em;
+	border: 0.3em solid #63D6FF;
+	text-align: center;
+	background-color: #FAFAFA;
+	border-radius: 1em;
+}
+#indice table td:hover.normal {
+	background-color: #FAFAFA;
+	border: 0.3em solid #FAFAFA;
+}
+#indice table td:hover.red  {
+	background-color: #FFA9A9;
+	border: 0.3em solid #FFA9A9;
+}
+#indice table td a {
+	height: 100%;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+#contido {
+	position: relative;
+}
